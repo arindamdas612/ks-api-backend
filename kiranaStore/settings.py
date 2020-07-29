@@ -43,9 +43,11 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'corsheaders',
+    'storages',
 
     'profiles_api',
     'shop_api',
+    'order_api'
 ]
 
 MIDDLEWARE = [
@@ -130,6 +132,23 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+MEDIA_URL = '/media/'
+
 AUTH_USER_MODEL = 'profiles_api.UserProfile'
 
 CORS_ORIGIN_ALLOW_ALL = True
+
+AWS_ACCESS_KEY_ID = "-------"
+AWS_SECRET_ACCESS_KEY = "---------"
+
+AWS_STORAGE_BUCKET_NAME = "django-files-lab"
+AWS_S3_USE_SSL = False
+
+AWS_S3_REGION_NAME = 'ap-south-1'
+
+AWS_S3_FILE_OVERWRITE = False
+AWS_DEFAULT_ACL = None
+
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
