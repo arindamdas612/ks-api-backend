@@ -1,6 +1,124 @@
 from .models import Order, OrderItem, OrderStatus, OrderActivity
 
 
+def get_update_order_by_id(order_id):
+    order = Order.objects.get(pk=order_id)
+
+    order_item_data = []
+    order_activity_data = [{
+        'id': -1,
+        'prev_status': 'Unavailable',
+        'next_status': 'Placed',
+        'activity_dt': order.created_on.isoformat(),
+        'user': order.user.get_full_name(),
+        'is_admin': order.user.is_superuser,
+    }]
+    order_value = 0.0
+    order_items = OrderItem.objects.filter(linked_order__id=order.id)
+    order_activities = OrderActivity.objects.filter(order__id=order.id)
+    for oi in order_items:
+        if oi.status != OrderItem.OrderItemStatus.CANCELLED and oi.status != OrderItem.OrderItemStatus.NOSTOCK:
+            order_value += oi.total_price
+        item = {
+            'id': oi.id,
+            'product_title': oi.product_title,
+            'qty': oi.qty,
+            'unit_price': oi.price,
+            'status': oi.get_status_display(),
+            'image_URL': oi.get_cover_image(),
+            'total_price': oi.total_price,
+        }
+        order_item_data.append(item)
+
+    for ord_act in order_activities:
+        activity_item = {
+            'id': ord_act.id,
+            'prev_status': ord_act.prev_status,
+            'next_status': ord_act.next_status,
+            'activity_dt': ord_act.changed_on.isoformat(),
+            'user': ord_act.changed_by.get_full_name(),
+            'is_admin': ord_act.changed_by.is_superuser,
+        }
+        order_activity_data.append(activity_item)
+    ord = {
+        'id': order.id,
+        'display_id': order.display_id,
+        'user_name': order.user.get_full_name(),
+        'user_mobile': order.user.mobile,
+        'user_email': order.user.email,
+        'order_value': order_value,
+        'order_items': order_item_data,
+        'order_activity': order_activity_data,
+        'status': order.get_status_display(),
+        'created_on': order.created_on.isoformat(),
+        'update_on': order.updated_on.isoformat(),
+        'order_dt': order.created_on.strftime("%m/%d/%Y"),
+        'available_actions': order.next_actions(),
+    }
+    return ord
+
+
+def get_updated_order_data():
+    order_data = []
+    all_orders = Order.objects.all().order_by('-created_on')
+    for order in all_orders:
+        order_item_data = []
+        order_activity_data = [{
+            'id': -1,
+            'prev_status': 'Unavailable',
+            'next_status': 'Placed',
+            'activity_dt': order.created_on.isoformat(),
+            'user': order.user.get_full_name(),
+            'is_admin': order.user.is_superuser,
+        }]
+        order_value = 0.0
+        order_items = OrderItem.objects.filter(linked_order__id=order.id)
+        order_activities = OrderActivity.objects.filter(order__id=order.id)
+        for oi in order_items:
+            if oi.status != OrderItem.OrderItemStatus.CANCELLED and oi.status != OrderItem.OrderItemStatus.NOSTOCK:
+                order_value += oi.total_price
+            item = {
+                'id': oi.id,
+                'product_title': oi.product_title,
+                'qty': oi.qty,
+                'unit_price': oi.price,
+                'status': oi.get_status_display(),
+                'image_URL': oi.get_cover_image(),
+                'total_price': oi.total_price,
+            }
+            order_item_data.append(item)
+
+        for ord_act in order_activities:
+            activity_item = {
+                'id': ord_act.id,
+                'prev_status': ord_act.prev_status,
+                'next_status': ord_act.next_status,
+                'activity_dt': ord_act.changed_on.isoformat(),
+                'user': ord_act.changed_by.get_full_name(),
+                'is_admin': ord_act.changed_by.is_superuser,
+            }
+            order_activity_data.append(activity_item)
+        ord = {
+            'id': order.id,
+            'display_id': order.display_id,
+            'user_name': order.user.get_full_name(),
+            'user_mobile': order.user.mobile,
+            'user_email': order.user.email,
+            'order_value': order_value,
+            'order_items': order_item_data,
+            'order_activity': order_activity_data,
+            'status': order.get_status_display(),
+            'created_on': order.created_on.isoformat(),
+            'update_on': order.updated_on.isoformat(),
+            'order_dt': order.created_on.strftime("%m/%d/%Y"),
+            'available_actions': order.next_actions(),
+        }
+
+        order_data.append(ord)
+
+    return order_data
+
+
 def process_order_action(next_status, order_id, user):
     process_code = 0
     process_message = ''
