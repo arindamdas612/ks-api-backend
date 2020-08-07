@@ -140,8 +140,6 @@ AUTH_USER_MODEL = 'profiles_api.UserProfile'
 
 CORS_ORIGIN_ALLOW_ALL = True
 
-AWS_ACCESS_KEY_ID = "----"
-AWS_SECRET_ACCESS_KEY = "----"
 
 AWS_STORAGE_BUCKET_NAME = "django-files-lab"
 AWS_S3_USE_SSL = False
